@@ -1,4 +1,5 @@
 var fs = require ('fs');
+var chalk = require ('chalk');
 
 var content;
 fs.readFile(__dirname+"/wolkenkratzer.json",function read(err , data) {
@@ -12,10 +13,10 @@ content = JSON.parse(data); // Der Variabel content werden die ausgelesenen Info
 
 for(i = 0; i < content.wolkenkratzer.length; i++) // Die For-Schleife dient hier zur strukturierten Ausgabe des Objektes.
 {
-	console.log("\nName: "+content.wolkenkratzer[i].name);		// Beispiel:  Name : Burj Khalifa
-	console.log("Stadt: "+content.wolkenkratzer[i].stadt);		//  	      Stadt: Dubai
-	console.log("Höhe: "+content.wolkenkratzer[i].hoehe);		//	      Höhe : 828	
-	console.log("\n------------------------------------");		//           -------------------------
+	console.log("\nName: "+chalk.red(content.wolkenkratzer[i].name));		// Beispiel:  Name : Burj Khalifa
+	console.log("Stadt: "+chalk.cyan(content.wolkenkratzer[i].stadt));		//  	      Stadt: Dubai
+	console.log("Höhe: "+chalk.green(content.wolkenkratzer[i].hoehe));		//	      Höhe : 828	
+	console.log("\n------------------------------------");		//           ------------------------
 }
 
 });
