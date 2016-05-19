@@ -1,0 +1,19 @@
+{
+  "name": "th_bibliothek_verleihsystem",
+  "version": "0.0.1",
+  "description": "Ein responsives Verleihsystem  für Bibliotheken.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "\u0016https://github.com/kodonad/WBA2_SS16_Kodona"
+  },
+  "author": "Dennis",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.15.1",
+    "express": "^4.13.4"
+  }
+}
