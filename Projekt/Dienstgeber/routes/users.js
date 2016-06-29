@@ -1,9 +1,8 @@
 var express = require('express');
 var redis = require('redis');
 var db = redis.createClient();
-
 var users = new express.Router();
-
+var checkIndex;
 
 users.route('/')
 .get(function(req,res) {
@@ -75,20 +74,84 @@ users.route('/:id')
                 }
         });
     });
-users.route('/:id/books/:id')
+users.route('/:id/loanbooks')
 
 .get(function(req,res) {
-    db.get('users:'+req.params.id,function(err,rep){
+    db.exists('users:'+req.params.id,function(err,rep){
+    if(rep==1)
+    {
+    db.lrange('users:'+req.params.id+':loanbooks',0,10000,function(err,rep){
     if(rep) {
         res.status(200).type('json').send(rep);
     }
     else {
-        res.status(404).type('text').send('Dieser Benutzer besitzt kein Buch mit der ID ' +req.params.id);
+        res.status(404).type('text').send('Dieser Benutzer hat keine Buecher ausgeliehen');
     }
     });
+    }
+    else { res.status(404).type('text').send('Der Nutzer mit der ID '+req.params.id+' existiert nicht.')
+         }
+});
 })
 .post(function(req,res) {
     
-    // Überprüfen ob es das Buch mit der ID 1 gibt und ob es verfügbar ist.
-});   
+    db.exists('users:'+req.params.id,function(err,rep){
+    if(rep==1)
+    {
+    var newLoan = req.body;
+    db.exists('books:'+newLoan.isbn,function(err,rep){
+    if(rep==1){
+    db.lpush("users:"+req.params.id+":loanbooks",JSON.stringify(newLoan),function(err,rep){
+       if(rep){
+           res.status(200).type('text').send('Die Ausleihe für den Benutzer mit der ID '+req.params.id+' war erfolgreich.')
+       }
+    else {
+            res.status(404).type('text').send('Der Benutzer mit der ID '+req.params.id+ 'existiert nicht.')
+    }
+    });
+    }
+    else { res.status(404).type('text').send('Das Buch mit der ISBN '+newLoan.isbn+' existiert nicht. Ausleihe nicht moeglich!')}
+    });
+    }
+    else { res.status(404).type('text').send('Der Nutzer mit der ID '+req.params.id+' existiert nicht. Ausleihe nicht moeglich!')}
+    });
+});
+
+users.route('/:id/loanbooks/:isbn')
+.get(function(req,res){
+     db.exists('users:'+req.params.id,function(err,rep){
+    if(rep==1)
+    {
+        var items = new Array;
+        var checkIndex = false;
+        var returnItem;
+             db.llen("users:"+req.params.id+":loanbooks",function(err,rep){
+             var listLength = rep;
+
+             db.lrange('users:'+req.params.id+':loanbooks',0,10000,function(err,rep){
+                 items = rep;
+                 for(var i = 0; i <items.length ; i++)
+                     {
+                         if(items[i].indexOf(req.params.isbn) > 0)
+                             {
+                                 checkIndex = true;
+                                 returnItem = items[i];
+                             }
+                     }
+                     if(checkIndex == true)
+                         {
+                             res.status(200).type('json').send(returnItem);
+                         }
+                    else {
+                        res.status(404).type('text').send('Der Nutzer mit der ID '+req.params.id+' hat kein Buch mit der ISBN '+req.params.isbn+' ausgeliehen.');
+                    }
+                 });
+             });
+     }
+    else {res.status(404).type('text').send('Der Nutzer mit der ID '+req.params.id+' existiert nicht.')
+         }
+        });
+         
+});
+
 module.exports = users;
