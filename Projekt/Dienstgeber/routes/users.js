@@ -4,6 +4,8 @@ var db = redis.createClient();
 var users = new express.Router();
 var checkIndex;
 
+// USER RESOURCE 
+//
 users.route('/')
 .get(function(req,res) {
 
@@ -74,14 +76,16 @@ users.route('/:id')
                 }
         });
     });
+
+// USER BOOKS
 users.route('/:id/loanbooks')
 
 .get(function(req,res) {
     db.exists('users:'+req.params.id,function(err,rep){
-    if(rep==1)
+    if(rep == 1)
     {
     db.lrange('users:'+req.params.id+':loanbooks',0,10000,function(err,rep){
-    if(rep) {
+    if(rep != "") {
         res.status(200).type('json').send(rep);
     }
     else {
@@ -101,20 +105,45 @@ users.route('/:id/loanbooks')
     var newLoan = req.body;
     db.exists('books:'+newLoan.isbn,function(err,rep){
     if(rep==1){
-    db.lpush("users:"+req.params.id+":loanbooks",JSON.stringify(newLoan),function(err,rep){
-       if(rep){
-           res.status(200).type('text').send('Die Ausleihe für den Benutzer mit der ID '+req.params.id+' war erfolgreich.')
-       }
-    else {
-            res.status(404).type('text').send('Der Benutzer mit der ID '+req.params.id+ 'existiert nicht.')
-    }
-    });
+    
+        var items = new Array;
+        var checkIndex = false;
+        var returnItem;
+        db.llen("users:"+req.params.id+":loanbooks",function(err,rep){
+             var listLength = rep;
+
+             db.lrange('users:'+req.params.id+':loanbooks',0,10000,function(err,rep){
+                 items = rep;
+                 for(var i = 0; i <items.length ; i++)
+                     {
+                         if(items[i].indexOf(newLoan.isbn) > 0)
+                             {
+                                 checkIndex=true;
+                                 returnItem = items[i];
+                                 
+                             }
+                     }
+                     if(checkIndex == false)
+                         {
+                             db.lpush("users:"+req.params.id+":loanbooks",JSON.stringify(newLoan),function(err,rep){
+                                 res.status(200).type('text').send('Die Ausleihe für den Benutzer mit der ID '+req.params.id+' war erfolgreich.')
+                             });
+                         }
+                    else {
+                        res.status(404).type('text').send('Der Nutzer mit der ID '+req.params.id+' hat bereits ein  Buch mit der ISBN '+req.body.isbn+' ausgeliehen.');
+                    }
+                 
+                 });
+             });
+
     }
     else { res.status(404).type('text').send('Das Buch mit der ISBN '+newLoan.isbn+' existiert nicht. Ausleihe nicht moeglich!')}
     });
     }
     else { res.status(404).type('text').send('Der Nutzer mit der ID '+req.params.id+' existiert nicht. Ausleihe nicht moeglich!')}
     });
+    
+    
 });
 
 users.route('/:id/loanbooks/:isbn')
@@ -144,6 +173,220 @@ users.route('/:id/loanbooks/:isbn')
                          }
                     else {
                         res.status(404).type('text').send('Der Nutzer mit der ID '+req.params.id+' hat kein Buch mit der ISBN '+req.params.isbn+' ausgeliehen.');
+                    }
+                 });
+             });
+     }
+    else {res.status(404).type('text').send('Der Nutzer mit der ID '+req.params.id+' existiert nicht.')
+         }
+        });
+         
+});
+
+
+// USER EBOOKS
+users.route('/:id/loanebooks')
+
+.get(function(req,res) {
+    db.exists('users:'+req.params.id,function(err,rep){
+    if(rep==1)
+    {
+    db.lrange('users:'+req.params.id+':loanebooks',0,10000,function(err,rep){
+    if(rep != "") {
+        res.status(200).type('json').send(rep);
+    }
+    else {
+        res.status(404).type('text').send('Dieser Benutzer hat keine E-Books ausgeliehen');
+    }
+    });
+    }
+    else { res.status(404).type('text').send('Der Nutzer mit der ID '+req.params.id+' existiert nicht.')
+         }
+});
+})
+.post(function(req,res) {
+    
+    db.exists('users:'+req.params.id,function(err,rep){
+    if(rep==1)
+    {
+    var newLoan = req.body;
+    db.exists('ebooks:'+newLoan.isbn,function(err,rep){
+    if(rep==1){
+    
+        var items = new Array;
+        var checkIndex = false;
+        var returnItem;
+        db.llen("users:"+req.params.id+":loanebooks",function(err,rep){
+             var listLength = rep;
+
+             db.lrange('users:'+req.params.id+':loanebooks',0,10000,function(err,rep){
+                 items = rep;
+                 for(var i = 0; i <items.length ; i++)
+                     {
+                         if(items[i].indexOf(newLoan.isbn) > 0)
+                             {
+                                 checkIndex=true;
+                                 returnItem = items[i];
+                                 
+                             }
+                     }
+                     if(checkIndex == false)
+                         {
+                             db.lpush("users:"+req.params.id+":loanebooks",JSON.stringify(newLoan),function(err,rep){
+                                 res.status(200).type('text').send('Die Ausleihe für den Benutzer mit der ID '+req.params.id+' war erfolgreich.')
+                             });
+                         }
+                    else {
+                        res.status(404).type('text').send('Der Nutzer mit der ID '+req.params.id+' hat bereits ein  E-Book mit der ISBN '+req.body.isbn+' ausgeliehen.');
+                    }
+                 
+                 });
+             });
+
+    }
+    else { res.status(404).type('text').send('Das E-Book mit der ISBN '+newLoan.isbn+' existiert nicht. Ausleihe nicht moeglich!')}
+    });
+    }
+    else { res.status(404).type('text').send('Der Nutzer mit der ID '+req.params.id+' existiert nicht. Ausleihe nicht moeglich!')}
+    });
+    
+    
+});
+
+users.route('/:id/loanebooks/:isbn')
+.get(function(req,res){
+     db.exists('users:'+req.params.id,function(err,rep){
+    if(rep==1)
+    {
+        var items = new Array;
+        var checkIndex = false;
+        var returnItem;
+             db.llen("users:"+req.params.id+":loanebooks",function(err,rep){
+             var listLength = rep;
+
+             db.lrange('users:'+req.params.id+':loanebooks',0,10000,function(err,rep){
+                 items = rep;
+                 for(var i = 0; i <items.length ; i++)
+                     {
+                         if(items[i].indexOf(req.params.isbn) > 0)
+                             {
+                                 checkIndex = true;
+                                 returnItem = items[i];
+                             }
+                     }
+                     if(checkIndex == true)
+                         {
+                             res.status(200).type('json').send(returnItem);
+                         }
+                    else {
+                        res.status(404).type('text').send('Der Nutzer mit der ID '+req.params.id+' hat kein E-Book mit der ISBN '+req.params.isbn+' ausgeliehen.');
+                    }
+                 });
+             });
+     }
+    else {res.status(404).type('text').send('Der Nutzer mit der ID '+req.params.id+' existiert nicht.')
+         }
+        });
+         
+});
+
+// USER AUDIOBOOKS
+
+users.route('/:id/loanaudiobooks')
+
+.get(function(req,res) {
+    db.exists('users:'+req.params.id,function(err,rep){
+    if(rep==1)
+    {
+    db.lrange('users:'+req.params.id+':loanaudiobooks',0,10000,function(err,rep){
+    if(rep != "") {
+        res.status(200).type('json').send(rep);
+    }
+    else {
+        res.status(404).type('text').send('Dieser Benutzer hat keine E-Books ausgeliehen');
+    }
+    });
+    }
+    else { res.status(404).type('text').send('Der Nutzer mit der ID '+req.params.id+' existiert nicht.')
+         }
+});
+})
+.post(function(req,res) {
+    
+    db.exists('users:'+req.params.id,function(err,rep){
+    if(rep==1)
+    {
+    var newLoan = req.body;
+    db.exists('audiobooks:'+newLoan.isbn,function(err,rep){
+    if(rep==1){
+    
+        var items = new Array;
+        var checkIndex = false;
+        var returnItem;
+        db.llen("users:"+req.params.id+":loanaudiobooks",function(err,rep){
+             var listLength = rep;
+
+             db.lrange('users:'+req.params.id+':loanaudiobooks',0,10000,function(err,rep){
+                 items = rep;
+                 for(var i = 0; i <items.length ; i++)
+                     {
+                         if(items[i].indexOf(newLoan.isbn) > 0)
+                             {
+                                 checkIndex=true;
+                                 returnItem = items[i];
+                                 
+                             }
+                     }
+                     if(checkIndex == false)
+                         {
+                             db.lpush("users:"+req.params.id+":loanaudiobooks",JSON.stringify(newLoan),function(err,rep){
+                                 res.status(200).type('text').send('Die Ausleihe für den Benutzer mit der ID '+req.params.id+' war erfolgreich.')
+                             });
+                         }
+                    else {
+                        res.status(404).type('text').send('Der Nutzer mit der ID '+req.params.id+' hat bereits ein  E-Book mit der ISBN '+req.body.isbn+' ausgeliehen.');
+                    }
+                 
+                 });
+             });
+
+    }
+    else { res.status(404).type('text').send('Das E-Book mit der ISBN '+newLoan.isbn+' existiert nicht. Ausleihe nicht moeglich!')}
+    });
+    }
+    else { res.status(404).type('text').send('Der Nutzer mit der ID '+req.params.id+' existiert nicht. Ausleihe nicht moeglich!')}
+    });
+    
+    
+});
+
+users.route('/:id/loanaudiobooks/:isbn')
+.get(function(req,res){
+     db.exists('users:'+req.params.id,function(err,rep){
+    if(rep==1)
+    {
+        var items = new Array;
+        var checkIndex = false;
+        var returnItem;
+             db.llen("users:"+req.params.id+":loanaudiobooks",function(err,rep){
+             var listLength = rep;
+
+             db.lrange('users:'+req.params.id+':loanaudiobooks',0,10000,function(err,rep){
+                 items = rep;
+                 for(var i = 0; i <items.length ; i++)
+                     {
+                         if(items[i].indexOf(req.params.isbn) > 0)
+                             {
+                                 checkIndex = true;
+                                 returnItem = items[i];
+                             }
+                     }
+                     if(checkIndex == true)
+                         {
+                             res.status(200).type('json').send(returnItem);
+                         }
+                    else {
+                        res.status(404).type('text').send('Der Nutzer mit der ID '+req.params.id+' hat kein E-Book mit der ISBN '+req.params.isbn+' ausgeliehen.');
                     }
                  });
              });
