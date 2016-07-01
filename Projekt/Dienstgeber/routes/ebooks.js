@@ -8,14 +8,25 @@ books.route('/')
 .get(function(req,res) {
 
         db.keys('ebooks:*',function(err, rep){
-
-        if(rep != 0){
-                res.status(200).type('json').send(rep);
-         }
-
-            else {
-                res.status(404).type('text').send('Es existieren keine E-Books in der Datenbank');
-                }
+        var ebooks = [];
+            
+        if(rep.length != 0){
+            db.mget(rep,function(err,rep){
+                rep.forEach(function(val){
+                    ebooks.push(JSON.parse(val));
+                });
+                ebooks = ebooks.map(function(ebook){
+                  return{isbn: ebook.isbn, titel: ebook.titel, subtitel: ebook.subtitel, author: ebook.author,erscheinungsjahr: ebook.erscheinungsjahr, anzahl: ebook.anzahl};  
+                });
+                var data = {library: ebooks}
+                res.json(data);
+            });
+        }
+            else{
+            var data = {library: ebooks}
+                res.json(data);
+        }
+        
         });
     })
 .post(function(req,res){
@@ -27,15 +38,21 @@ books.route('/')
                    });
         });
 books.route('/:isbn')
-.get(function(req,res){
+    .get (function(req,res){
         
         db.get('ebooks:'+req.params.isbn,function(err,rep){
-            
+            var getEBook = [];
             if(rep) {
-                res.status(200).type('json').send(rep);
+                getEBook.push(JSON.parse(rep));
+                
+                getEBook = getEBook.map(function(ebook){
+                    return{isbn: ebook.isbn, titel: ebook.titel, subtitel: ebook.titel, author: ebook.author,erscheinungsjahr: ebook.erscheinungsjahr, anzahl: ebook.anzahl};
+                });
+                var data = {library: getEBook}
+                res.json(data);
             }
             else {
-                res.status(404).type('text').send('Das E-Book mit der ISBN ' +req.params.isbn+' existiert nicht');
+                res.status(404).type('text').send('Das E-Book mit der ID ' +req.params.isbn+' existiert nicht');
             }
         });
     })

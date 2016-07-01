@@ -6,16 +6,26 @@ var books = new express.Router();
 
 books.route('/')
 .get(function(req,res) {
-
         db.keys('audiobooks:*',function(err, rep){
-
-        if(rep != 0){
-                res.status(200).type('json').send(rep);
-         }
-
-            else {
-                res.status(404).type('text').send('Es existieren keine Hoerbuecher in der Datenbank');
-                }
+        var audiobooks = [];
+        
+        if(rep.length != 0){
+            db.mget(rep,function(err,rep){
+                rep.forEach(function(val){
+                    audiobooks.push(JSON.parse(val));
+                });
+                audiobooks = audiobooks.map(function(audiobook){
+                  return{isbn: audiobook.isbn, titel: audiobook.titel, subtitel: audiobook.subtitel, author: audiobook.author,erscheinungsjahr: audiobook.erscheinungsjahr, anzahl: audiobook.anzahl};  
+                });
+                var data = {library: audiobooks}
+                res.json(data);
+            });
+        }
+            else{
+            var data = {library: audiobooks}
+                res.json(data);
+        }
+        
         });
     })
 .post(function(req,res){
@@ -26,16 +36,23 @@ books.route('/')
              res.json(newBook);      
                    });
         });
+    
 books.route('/:isbn')
-.get(function(req,res){
+    .get (function(req,res){
         
         db.get('audiobooks:'+req.params.isbn,function(err,rep){
-            
+            var getAudioBook = [];
             if(rep) {
-                res.status(200).type('json').send(rep);
+                getAudioBook.push(JSON.parse(rep));
+                
+                getAudioBook = getAudioBook.map(function(audiobook){
+                    return{isbn: audiobook.isbn, titel: audiobook.titel, subtitel: audiobook.titel, author: audiobook.author,erscheinungsjahr: audiobook.erscheinungsjahr, anzahl: audiobook.anzahl};
+                });
+                var data = {library: getAudioBook}
+                res.json(data);
             }
             else {
-                res.status(404).type('text').send('Das Hoerbuch mit der ISBN ' +req.params.isbn+' existiert nicht');
+                res.status(404).type('text').send('Das Hoerbuch mit der ID ' +req.params.isbn+' existiert nicht');
             }
         });
     })

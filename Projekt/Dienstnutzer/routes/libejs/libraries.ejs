@@ -1,0 +1,16 @@
+<html>
+<head>
+    <title>Bibliotheken</title>
+    <meta charset="utf-8">
+</head>
+<body>
+    <h1>Bibliotheken</h1>
+    <ul>
+        <%
+            for(var i = 0;i < library.length; i++){
+                %><li><%= library[i].id+" "+library[i].name %></li><%
+            }
+        %>
+    </ul>
+</body>
+</html>

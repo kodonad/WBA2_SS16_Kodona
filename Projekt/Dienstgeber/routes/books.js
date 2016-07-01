@@ -8,14 +8,25 @@ books.route('/')
 .get(function(req,res) {
 
         db.keys('books:*',function(err, rep){
-
-        if(rep != 0){
-                res.status(200).type('json').send(rep);
-         }
-
-            else {
-                res.status(404).type('text').send('Es existieren keine Buecher in der Datenbank');
-                }
+        var books = [];
+            
+         if(rep.length != 0){
+            db.mget(rep,function(err,rep){
+                rep.forEach(function(val){
+                    books.push(JSON.parse(val));
+                });
+                books = books.map(function(book){
+                  return{isbn: book.isbn, titel: book.titel, subtitel: book.subtitel, author: book.author,erscheinungsjahr: book.erscheinungsjahr, anzahl: book.anzahl};  
+                });
+                var data = {library: books}
+                res.json(data);
+            });
+        }
+            else{
+            var data = {library: books}
+                res.json(data);
+        }
+        
         });
     })
 .post(function(req,res){
@@ -27,15 +38,21 @@ books.route('/')
                    });
         });
 books.route('/:isbn')
-.get(function(req,res){
+    .get (function(req,res){
         
         db.get('books:'+req.params.isbn,function(err,rep){
-            
+            var getBook = [];
             if(rep) {
-                res.status(200).type('json').send(rep);
+                getBook.push(JSON.parse(rep));
+                
+                getBook = getBook.map(function(book){
+                    return{isbn: book.isbn, titel: book.titel, subtitel: book.subtitel, author: book.author,erscheinungsjahr: book.erscheinungsjahr, anzahl: book.anzahl};
+                });
+                var data = {library: getBook}
+                res.json(data);
             }
             else {
-                res.status(404).type('text').send('Das Buch mit der ISBN ' +req.params.isbn+' existiert nicht');
+                res.status(404).type('text').send('Das Buch mit der ID ' +req.params.isbn+' existiert nicht');
             }
         });
     })

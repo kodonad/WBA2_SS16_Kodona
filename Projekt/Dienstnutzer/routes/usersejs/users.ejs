@@ -1,0 +1,16 @@
+<html>
+<head>
+    <title>Users</title>
+</head>
+<body>
+    <h1>Users</h1>
+    <ul>
+        <%
+            for(var i = 0;i < benutzer.length; i++){
+                %><li><a href="/users/33<%benutzer[i].id%>"><%= benutzer[i].name %></a></li><%
+            }
+        %>
+    </ul>
+    <% if(benutzer[0] == undefined) { %><p>Dieses System verfügt über keine User.</p><%}%>
+</body>
+</html>

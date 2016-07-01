@@ -1,0 +1,25 @@
+<html>
+<head>
+    <title>Buchausleihe: Hörbücher</title>
+    <meta charset="utf-8">
+</head>
+<body>
+    <h1>Buchausleihe: Hörbücher</h1>
+        <table>
+        <tr align="center">
+        <th>ISBN</th><th>Titel</th><th>Subtitel</th><th>Autor</th><th>Erscheinungsjahr</th>
+        </tr>
+           <%
+            for(var i = 0;i < benutzer.length; i++){
+                %><tr align="center"><td><%= benutzer[i].isbn %></td>
+                      <td width="200"><%= benutzer[i].titel %></td>
+                      <td width="200"><%= benutzer[i].subtitel %></td>
+                      <td width="200"><%= benutzer[i].autor %></td>
+                      <td width="200"><%= benutzer[i].erscheinungsjahr %></td>
+            
+            </tr><%
+            }%>
+        </table>
+    <% if(benutzer[0] == undefined) { %><p>Keine Ausleihen vorhanden</p><%}%>
+</body>
+</html>
