@@ -22,6 +22,40 @@ app.use('/ebooks',ebooks);
 app.use('/audiobooks',audiobooks);
 app.use('/libraries',libraries);
 
+app.route('/')
+.get(jsonParser, function(req,res){
+    fs.readFile('./routes/app.ejs',{encoding: 'utf-8'}, function(err,filestring){
+        if(err){
+            throw err;
+        } else {
+            
+            var options = {
+                host:'localhost',
+                port: 3000,
+                path: '/',
+                method: 'GET',
+                headers: {
+                    accept: 'application/json'
+                }
+            }
+            
+            var externalRequest = http.request(options,function(externalResponse) {
+                console.log('Connected');
+                externalResponse.on('data', function(chunk) {
+                    var appdata = chunk;
+                    var html = ejs.render(filestring, appdata);
+                    res.setHeader('content-type', 'text/html');
+                    res.writeHead(200);
+                    res.write(html);
+                    res.end();
+                });
+            });
+            externalRequest.end();
+        }
+    });
+});
+
+
 app.listen(3001,function(){
     console.log("Server listens on Port 3001");
 });

@@ -10,24 +10,23 @@ libraries.route('/')
 .get(function(req,res) {
 
         db.keys('libraries:*',function(err, rep){
-        var GetLib = [];
-        if(rep.length == 0) {
-            res.json(GetLib);
-            return;
-        }
-        else{
+        var libraries = [];
+        if(rep.length != 0){
             db.mget(rep,function(err,rep){
                 rep.forEach(function(val){
-                    GetLib.push(JSON.parse(val));
+                    libraries.push(JSON.parse(val));
                 });
-                GetLib = GetLib.map(function(lib){
+                libraries = libraries.map(function(lib){
                   return{id: lib.id, name: lib.name};  
                 });
-                var data = {library: GetLib}
+                var data = {library: libraries}
                 res.json(data);
             });
         }
-        
+        else {
+            var data = {library: libraries}
+                res.json(data);
+        }
         });
     })
 

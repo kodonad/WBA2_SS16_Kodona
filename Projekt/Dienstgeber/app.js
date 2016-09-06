@@ -23,5 +23,5 @@ app.listen(3000);
 console.log('Server in Betrieb');
 
 app.get('/', function(req, res) {
-    res.send('Willkommen zum Verleihsystem unserer Bibliothek');
+    res.send('Bibliothek Verleihsystem');
     });
