@@ -4,6 +4,7 @@ var jsonParser = bodyParser.json();
 
 var ejs = require('ejs');
 var fs = require('fs');
+var path = require('path');
 var http = require('http');
 
 var users = require('./routes/users.js');
@@ -14,8 +15,10 @@ var libraries = require('./routes/libraries.js');
 
 var app = express();
 
+app.use(bodyParser.urlencoded({extended:true}));
 app.use(bodyParser.json());
 
+app.use(express.static(path.join(__dirname + '/source')));
 app.use('/users',users);
 app.use('/books',books);
 app.use('/ebooks',ebooks);

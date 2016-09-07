@@ -4,44 +4,39 @@ var db = redis.createClient();
 var libraries = new express.Router();
 var checkIndex;
 
-// USER RESOURCE 
+// Library RESOURCE 
 //
+var arrLib = [
+    {
+        libId: 1,
+        title: "TH Koeln Bibliothek",
+        location:"Steinmüllerallee 1, 51643 Gummersbach",
+    },
+    {
+        libId: 1,
+        title: "TH Koeln Bibliothek",
+        location:"Claudiusstraße 1, 50678 Köln",
+    },
+    {
+        libId: 1,
+        title: "TH Koeln Bibliothek",
+        location:"Betzdorfer Straße 2, 50679 Köln",
+    },
+    {
+        libId: 1,
+        title: "Stadtbibliothek Köln",
+        location:"Josef-Haubrich-Hof 1, 50676 Köln",
+    },
+    
+]
 libraries.route('/')
 .get(function(req,res) {
 
-        db.keys('libraries:*',function(err, rep){
-        var libraries = [];
-        if(rep.length != 0){
-            db.mget(rep,function(err,rep){
-                rep.forEach(function(val){
-                    libraries.push(JSON.parse(val));
-                });
-                libraries = libraries.map(function(lib){
-                  return{id: lib.id, name: lib.name};  
-                });
-                var data = {library: libraries}
-                res.json(data);
-            });
-        }
-        else {
-            var data = {library: libraries}
-                res.json(data);
-        }
-        });
-    })
 
-    .post(function(req,res){
-             
-            var newLib = req.body;
-            db.incr('id:libraries', function(err,rep){
-            newLib.id = rep;
-            console.log(newLib);
-            db.set('libraries:' + newLib.id, JSON.stringify(newLib), function(err,rep)
-            {
-             res.json(newLib);      
-                   });
-             });
-       });
+            var data = {library: arrLib}
+                res.json(data);
+    });
+
 libraries.route('/:id')
     .get (function(req,res){
         

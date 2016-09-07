@@ -5,12 +5,14 @@
 </head>
 <body>
     <h1>Bibliotheken</h1>
-    <ul>
+    <table border="1">
+        
         <%
             for(var i = 0;i < library.length; i++){
-                %><li><%= library[i].id+" "+library[i].name %></li><%
+                %><tr><td><%= library[i].title %></td><td><%=library[i].location %></td></tr><%
             }
         %>
-    </ul>
+    </table>
+    <% if(library[0].libId == "undefined"){ %><p>Das System verfügt über keine Bibliotheken</p><% }%> 
 </body>
 </html>

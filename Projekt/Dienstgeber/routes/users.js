@@ -29,9 +29,9 @@ users.route('/')
                 res.json(data);
         }
         });
-    })
-
-    .post(function(req,res){
+    });
+users.route('/adduser')
+   .post(function(req,res){
              
             var newUser = req.body;
             console.log(newUser);

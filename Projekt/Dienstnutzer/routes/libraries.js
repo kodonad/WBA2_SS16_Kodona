@@ -26,6 +26,7 @@ libraries.route('/')
             var externalRequest = http.request(options,function(externalResponse) {
                 console.log('Connected');
                 externalResponse.on('data', function(chunk) {
+                    console.log(JSON.parse(chunk));
                     var userdata = JSON.parse(chunk);
                     var html = ejs.render(filestring, userdata);
                     res.setHeader('content-type', 'text/html');
